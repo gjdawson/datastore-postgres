@@ -1,0 +1,43 @@
+{
+  "name": "@eventicle/datastore-postgres",
+  "version": "0.0.2",
+  "description": "Datastore implemented using postgres",
+  "repository": "git@github.com:eventicle/datastore-postgres.git",
+  "author": "Eventicle Team",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build-ts": "tsc",
+    "watch-ts": "tsc -w",
+    "integration-test": "NODE_ENV=dev jest --testRegex /test/.*\\.integration.ts$",
+    "unit-test": "NODE_ENV=dev jest --testRegex /test/.*\\.test.ts$ ",
+    "test": "yarn unit-test && yarn integration-test",
+    "lint": "eslint . --ext .ts --fix"
+  },
+  "dependencies": {
+    "@eventicle/eventicle-utilities": "0.0.2",
+    "@types/serialize-error": "^4.0.1",
+    "asynchronous-local-storage": "^1.0.2",
+    "bluebird": "^3.7.2",
+    "lodash": "^4.17.21",
+    "pg-promise": "^10.11.0",
+    "serialize-error": "^7.0.1",
+    "uuid": "^8.3.1"
+  },
+  "devDependencies": {
+    "@types/jest": "^26.0.14",
+    "@types/lodash": "^4.14.172",
+    "@types/loglevel": "^1.5.4",
+    "@types/node": "^14.11.10",
+    "@types/uuid": "^8.3.0",
+    "jest": "^26.5.3",
+    "ts-jest": "^26.4.1",
+    "ts-node": "^9.0.0",
+    "tsc": "^1.20150623.0",
+    "tslint": "^5.16.0",
+    "tslint-eslint-rules": "^5.4.0",
+    "typescript": "^4.2.4",
+    "typescript-bundle": "^1.0.14"
+  },
+  "license": "Apache-2.0"
+}
