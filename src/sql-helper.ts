@@ -51,7 +51,7 @@ export function jsonColumnQueryBuilder(key: string, query: DataQuery) {
 
 export function buildQueryObject(query: { [p: string]: string | number | DataQuery }, workspaceId: string, type: string): any {
 
-  let queryObject = { workspaceId, type } as any
+  let queryObject = { xxx_workspaceId: workspaceId, xxx_type: type } as any
 
   Object.keys(query).forEach((value) => {
 
@@ -115,7 +115,7 @@ export function buildWhere(query: { [p: string]: string | number | DataQuery }) 
 
 export function baseQuery(type, tableName, workspaced: boolean) {
   if (workspaced) {
-    return `select * from ${tableName} where workspace_id = $[workspaceId] and type = $[type]`;
+    return `select * from ${tableName} where workspace_id = $[xxx_workspaceId] and type = $[xxx_type]`;
   }
-  return `select * from ${tableName} where type = $[type]`;
+  return `select * from ${tableName} where type = $[xxx_type]`;
 }

@@ -14,7 +14,7 @@ export abstract class PsqlEventDataStore<CustomError extends Error> implements d
   events = new EventEmitter()
 
   constructor(readonly DB: () => IDatabase<any>, readonly PGP: () => IMain, readonly config: {
-    workspaces: boolean
+    workspaces: boolean, logSql?: boolean
   }) {
   }
 
@@ -115,22 +115,36 @@ export abstract class PsqlEventDataStore<CustomError extends Error> implements d
       });
   }
 
+  maybeLogSql(query: string, params: any) {
+    if (this.config.logSql) {
+      logger.info(`SQL: ${query} ${JSON.stringify(params)}`)
+    }
+  }
+  maybeLogSqlResult(query: string, vals: any[]) {
+    if (this.config.logSql) {
+      logger.info(`RESULT: ${query} ==> ${vals.length} `)
+    }
+  }
+
   async getEntity(workspaceId: string, type: string, id: any): Promise<ds.Record> {
-    let query = `${baseQuery(type, this.tableName(type), this.config.workspaces)} AND id = ?`;
-    let vals = id
+    let query = `${baseQuery(type, this.tableName(type), this.config.workspaces)} AND id = $[id]`;
+    let vals = { type, id } as any
 
     if (this.config.workspaces) {
-      query = `${baseQuery(type, this.tableName(type), this.config.workspaces)} AND workspace_id = ? AND id = ?`;
-      vals = [workspaceId, id]
+      query = `${baseQuery(type, this.tableName(type), this.config.workspaces)} AND id = $[id]`;
+      vals = { type, workspaceId, id }
     }
 
     const task: ITask<any> = als.get("transaction");
     var rows = null;
+
+    this.maybeLogSql(query, vals)
     if (task) {
       rows = await task.oneOrNone(query, vals)
     } else {
       rows = await this.DB().oneOrNone(query, vals);
     }
+    this.maybeLogSqlResult(query, rows)
 
     if (rows === null || rows.length === 0) {
       return null;
@@ -157,11 +171,14 @@ export abstract class PsqlEventDataStore<CustomError extends Error> implements d
 
       const task: ITask<any> = als.get("transaction");
       let rows = [];
+      const queryObject = buildQueryObject(query, workspaceId, type)
+      this.maybeLogSql(queryString, queryObject)
       if (task) {
-        rows = await task.manyOrNone(queryString, buildQueryObject(query, workspaceId, type))
+        rows = await task.manyOrNone(queryString, queryObject)
       } else {
-        rows = await this.DB().manyOrNone(queryString, buildQueryObject(query, workspaceId, type));
+        rows = await this.DB().manyOrNone(queryString, queryObject);
       }
+      this.maybeLogSqlResult(queryString, rows)
       return rows.map(this.entityMapper);
 
     } catch (error) {
@@ -195,9 +212,15 @@ export abstract class PsqlEventDataStore<CustomError extends Error> implements d
       const countQuery = task ? task.one(queryStringCount, queryObject) : await this.DB().one(queryStringCount, queryObject);
 
       const queryStringEntries = `${queryString} ${this.getOrderByClause(sorting)} LIMIT ${pageSize} OFFSET ${page * pageSize}`;
+
+      this.maybeLogSql(queryStringEntries, queryObject)
+
       const entriesQuery = task ? task.manyOrNone(queryStringEntries, queryObject) : await this.DB().many(queryStringEntries, queryObject);
 
       const [countResult, entriesResult] = await Promise.all([countQuery, entriesQuery]);
+
+      this.maybeLogSqlResult(queryStringEntries, entriesResult)
+
       const count = parseInt(countResult.rows[0].count);
       const entries = entriesResult.map(this.entityMapper);
 
@@ -249,7 +272,12 @@ export abstract class PsqlEventDataStore<CustomError extends Error> implements d
       }
 
       const task: ITask<any> = als.get("transaction");
+
+      this.maybeLogSql(sql, params)
+
       const res = task ? await task.none(sql, params) : await this.DB().none(sql, params);
+
+      this.maybeLogSqlResult(sql, res)
 
       const record = await this.getEntity(workspaceId, type, id);
 
@@ -279,8 +307,11 @@ export abstract class PsqlEventDataStore<CustomError extends Error> implements d
 
       const updateSql = this.PGP().helpers.update({content: content}, null, this.tableName(type)) + condition;
 
+      this.maybeLogSql(updateSql, {})
       const task: ITask<any> = als.get("transaction");
       const res = task ? await task.any(updateSql) : await this.DB().any(updateSql);
+
+      this.maybeLogSqlResult(updateSql, res)
 
       return item;
 
@@ -293,20 +324,22 @@ export abstract class PsqlEventDataStore<CustomError extends Error> implements d
     try {
       let query = `delete
                    from ${this.tableName(type)}
-                   where type = ?
-                     and id = ?`;
-      let params = [type, id]
+                   where type = $[type]
+                     and id = $[id]`;
+      let params = { type, id } as any
       if (this.config.workspaces) {
         query = `delete
                  from ${this.tableName(type)}
-                 where type = ?
-                   and id = ?
-                   and workspace_id = ?`;
-        params = [type, id, workspaceId]
+                 where type = $[type]
+                   and id = $[id]
+                   and workspace_id = $[workspaceId]`;
+        params ={ type, id, workspaceId }
       }
 
+      this.maybeLogSql(query, params)
       const task: ITask<any> = als.get("transaction");
       const res = task ? await task.any(query, params) : await this.DB().any(query, params);
+      this.maybeLogSqlResult(query, res)
       return res;
     } catch (error) {
       logger.error(JSON.stringify(error));
