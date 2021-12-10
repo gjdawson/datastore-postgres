@@ -195,34 +195,31 @@ export abstract class PsqlEventDataStore<CustomError extends Error> implements d
     [key: string]: string | null | ds.DataQuery
   }, sorting: ds.DataSorting, page: number, pageSize: number): Promise<ds.PagedRecords> {
 
-
     try {
 
+      let offset = (page * pageSize) - pageSize
+      if(offset < 0) {
+        offset = 0;
+      }
+
       const queryString =
-        baseQuery(type, this.tableName(type), this.config.workspaces) + ' ' +
+        `${baseQuery(type, this.tableName(type), this.config.workspaces) + ' ' +
         buildWhere(query) + ' ' +
-        this.getOrderByClause(sorting);
-
-      const queryObject = buildQueryObject(query, workspaceId, type)
-
-      const queryStringCount = `${queryString}`.replace('select *', 'select count(*)');
+        this.getOrderByClause(sorting)} LIMIT ${pageSize} OFFSET ${offset}`.replace('select *', 'select *, count(*) over() as count');
 
       const task: ITask<any> = als.get("transaction");
-      // console.info('queryStringCount', queryStringCount);
-      const countQuery = task ? task.one(queryStringCount, queryObject) : await this.DB().one(queryStringCount, queryObject);
+      let rows = [];
+      const queryObject = buildQueryObject(query, workspaceId, type)
+      this.maybeLogSql(queryString, queryObject)
+      if (task) {
+        rows = await task.manyOrNone(queryString, queryObject)
+      } else {
+        rows = await this.DB().manyOrNone(queryString, queryObject);
+      }
+      this.maybeLogSqlResult(queryString, rows)
 
-      const queryStringEntries = `${queryString} ${this.getOrderByClause(sorting)} LIMIT ${pageSize} OFFSET ${page * pageSize}`;
-
-      this.maybeLogSql(queryStringEntries, queryObject)
-
-      const entriesQuery = task ? task.manyOrNone(queryStringEntries, queryObject) : await this.DB().many(queryStringEntries, queryObject);
-
-      const [countResult, entriesResult] = await Promise.all([countQuery, entriesQuery]);
-
-      this.maybeLogSqlResult(queryStringEntries, entriesResult)
-
-      const count = parseInt(countResult.rows[0].count);
-      const entries = entriesResult.map(this.entityMapper);
+      const count = parseInt(rows[0].count);
+      const entries = rows.map(this.entityMapper);
 
       return {
         totalCount: count,
@@ -234,7 +231,6 @@ export abstract class PsqlEventDataStore<CustomError extends Error> implements d
       }
 
     } catch (error) {
-      console.log(error)
       logger.error(JSON.stringify(error));
     }
   }
