@@ -1,4 +1,5 @@
 import {DataQuery} from "@eventicle/eventicle-utilities/dist/datastore";
+import {isNumeric} from "tslint";
 
 export type whereQueryBuilder = (key: string, query: DataQuery) => string
 
@@ -8,36 +9,44 @@ export function addColumnWhere(column: string, where: whereQueryBuilder) {
   whereBuilders.set(column, where)
 }
 
+function formatLeftQuery(key: string, query: DataQuery) {
+  if (Number.isFinite(query.value)) {
+    return ` (content->>'${key}')::numeric `;
+  } else {
+    return `content->>'${key}'`;
+  }
+}
+
 export function jsonColumnQueryBuilder(key: string, query: DataQuery) {
   let queryString = ""
 
   switch (query.op) {
     case "IN":
-      queryString += ` AND content->>'${key}' = ANY($[${key}])`;
+      queryString += ` AND ${formatLeftQuery(key, query)} = ANY($[${key}])`;
       // params.push(query.value as any)
       break;
     case "EQ":
-      queryString += ` AND content->>'${key}'= $[${key}]`;
+      queryString += ` AND ${formatLeftQuery(key, query)} = $[${key}]`;
       // params.push(query.value as any)
       break;
     case "GT":
-      queryString += ` AND content->>'${key}' > $[${key}]`;
+      queryString += ` AND ${formatLeftQuery(key, query)} > $[${key}]`;
       // params.push(query.value as any)
       break;
     case "GTE":
-      queryString += ` AND content->>'${key}' >= $[${key}]`;
+      queryString += ` AND ${formatLeftQuery(key, query)} >= $[${key}]`;
       // params.push(query.value as any)
       break;
     case "LT":
-      queryString += ` AND content->>'${key}' < $[${key}]`;
+      queryString += ` AND ${formatLeftQuery(key, query)} < $[${key}]`;
       // params.push(query.value as any)
       break;
     case "LTE":
-      queryString += ` AND content->>'${key}' <= $[${key}]`;
+      queryString += ` AND ${formatLeftQuery(key, query)} <= $[${key}]`;
       // params.push(query.value as any)
       break;
     case "BETWEEN":
-      queryString += ` AND content->>'${key}' between $[${key}_0] and $[${key}_1]`;
+      queryString += ` AND ${formatLeftQuery(key, query)} between $[${key}_0] and $[${key}_1]`;
       // params.push((query.value as any)[0])
       // params.push((query.value as any)[1])
       break;
