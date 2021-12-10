@@ -128,11 +128,11 @@ export abstract class PsqlEventDataStore<CustomError extends Error> implements d
 
   async getEntity(workspaceId: string, type: string, id: any): Promise<ds.Record> {
     let query = `${baseQuery(type, this.tableName(type), this.config.workspaces)} AND id = $[id]`;
-    let vals = { type, id } as any
+    let vals = { xxx_type: type, id } as any
 
     if (this.config.workspaces) {
       query = `${baseQuery(type, this.tableName(type), this.config.workspaces)} AND id = $[id]`;
-      vals = { type, workspaceId, id }
+      vals = { xxx_type: type, xxx_workspaceId: workspaceId, id }
     }
 
     const task: ITask<any> = als.get("transaction");
