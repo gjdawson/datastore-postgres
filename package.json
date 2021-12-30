@@ -1,6 +1,6 @@
 {
   "name": "@eventicle/datastore-postgres",
-  "version": "0.0.7",
+  "version": "0.0.8",
   "description": "Datastore implemented using postgres",
   "repository": "git@github.com:eventicle/datastore-postgres.git",
   "author": "Eventicle Team",
