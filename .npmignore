@@ -9,3 +9,5 @@ jest.config.json
 book/
 .yalc
 *.lock
+*.iml
+.gitlab-ci.yml
