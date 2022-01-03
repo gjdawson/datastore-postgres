@@ -231,7 +231,7 @@ export abstract class PsqlEventDataStore<CustomError extends Error> implements d
       }
 
     } catch (error) {
-      logger.error(JSON.stringify(error));
+      logger.error("Query Error?", error);
     }
   }
 

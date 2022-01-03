@@ -35,24 +35,27 @@ export function jsonColumnQueryBuilder(key: string, query: DataQuery) {
       break;
     case "GTE":
       queryString += ` AND ${formatLeftQuery(key, query)} >= $[${key}]`;
-      // params.push(query.value as any)
       break;
     case "LT":
       queryString += ` AND ${formatLeftQuery(key, query)} < $[${key}]`;
-      // params.push(query.value as any)
       break;
     case "LTE":
       queryString += ` AND ${formatLeftQuery(key, query)} <= $[${key}]`;
-      // params.push(query.value as any)
       break;
     case "BETWEEN":
       queryString += ` AND ${formatLeftQuery(key, query)} between $[${key}_0] and $[${key}_1]`;
-      // params.push((query.value as any)[0])
-      // params.push((query.value as any)[1])
       break;
     case "OBJECT":
       queryString = `${queryString} AND content @> $[${key}]`;
-      // params.push(JSON.stringify(query.value) as any)
+      break;
+    case "LIKE":
+      const {value} = query as any
+      const {path = []} = value
+      if(path.length > 0) {
+        const last = path.pop()
+        const k = `content ${path.length > 0?' -> ':''}${path.join("' -> '")} ->> '${last}'`
+        queryString = `${queryString} AND ${k} ilike $[${key}]`
+      }
       break;
   }
   return queryString;
@@ -61,21 +64,31 @@ export function jsonColumnQueryBuilder(key: string, query: DataQuery) {
 export function buildQueryObject(query: { [p: string]: string | number | DataQuery }, workspaceId: string, type: string): any {
 
   let queryObject = { xxx_workspaceId: workspaceId, xxx_type: type } as any
-
+  console.log("DATA QUERY", query)
   Object.keys(query).forEach((value) => {
 
     let dataQuery: DataQuery = null
+
+    console.log("FILTER VALUE", query[value])
 
     if(["string", "number"].includes(typeof query[value])) {
       dataQuery = {
         value: query[value] as string,
         op: "EQ"
       }
+      // @ts-ignore
+    } else if(query[value].op == "LIKE") {
+      console.log("THIS IS A LIKE OP")
+      dataQuery = {
+        // @ts-ignore
+        value: `%${query[value].value.like}%` || "",
+        op: "LIKE"
+      }
     } else {
       dataQuery = query[value] as DataQuery
     }
 
-    if (dataQuery == null) {
+    if (dataQuery === null) {
       dataQuery = {
         value: null,
         op: "EQ"
