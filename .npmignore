@@ -7,3 +7,5 @@ jest.config.json
 .editorconfig
 .idea/
 book/
+.yalc
+*.lock
