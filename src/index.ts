@@ -60,7 +60,7 @@ export abstract class PsqlEventDataStore<CustomError extends Error> implements d
 
         try {
           // http://vitaly-t.github.io/pg-promise/Task.html
-          let ret = await this.DB().task(async task => { // task is used to ensure we stay on the same connection, not for rollback
+          let ret = await this.DB().tx(async task => { // task is used to ensure we stay on the same connection, not for rollback
             try {
               als.set("transaction", task)
               als.set("transaction.id", txId)
@@ -122,7 +122,7 @@ export abstract class PsqlEventDataStore<CustomError extends Error> implements d
   }
   maybeLogSqlResult(query: string, vals: any[]) {
     if (this.config.logSql) {
-      logger.info(`RESULT: ${query} ==> ${vals.length} `)
+      logger.info(`RESULT: ${query} ==> ${ vals && vals.length} `)
     }
   }
 
@@ -163,7 +163,6 @@ export abstract class PsqlEventDataStore<CustomError extends Error> implements d
   }, sorting: ds.DataSorting = {}): Promise<ds.Record[]> {
 
     try {
-
       const queryString =
         baseQuery(type, this.tableName(type), this.config.workspaces) + ' ' +
         buildWhere(query) + ' ' +
@@ -283,7 +282,7 @@ export abstract class PsqlEventDataStore<CustomError extends Error> implements d
 
       return null;
     } catch (error) {
-      logger.error(JSON.stringify(error));
+      logger.error("Error creating entity", error);
     }
   }
 

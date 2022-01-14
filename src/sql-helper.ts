@@ -64,12 +64,9 @@ export function jsonColumnQueryBuilder(key: string, query: DataQuery) {
 export function buildQueryObject(query: { [p: string]: string | number | DataQuery }, workspaceId: string, type: string): any {
 
   let queryObject = { xxx_workspaceId: workspaceId, xxx_type: type } as any
-  console.log("DATA QUERY", query)
   Object.keys(query).forEach((value) => {
 
     let dataQuery: DataQuery = null
-
-    console.log("FILTER VALUE", query[value])
 
     if(["string", "number"].includes(typeof query[value])) {
       dataQuery = {
@@ -78,7 +75,6 @@ export function buildQueryObject(query: { [p: string]: string | number | DataQue
       }
       // @ts-ignore
     } else if(query[value].op == "LIKE") {
-      console.log("THIS IS A LIKE OP")
       dataQuery = {
         // @ts-ignore
         value: `%${query[value].value.like}%` || "",
