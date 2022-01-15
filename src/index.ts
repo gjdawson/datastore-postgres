@@ -146,16 +146,11 @@ export abstract class PsqlEventDataStore<CustomError extends Error> implements d
     }
     this.maybeLogSqlResult(query, rows)
 
-    if (rows === null || rows.length === 0) {
+    if (rows === null) {
       return null;
     }
 
-    if (rows.length > 1) {
-      throw new Error(`Found more than 1 matching record ${type}/${id}`);
-    }
-
-    const row = rows[0];
-    return this.entityMapper(row);
+    return this.entityMapper(rows);
   }
 
   async findEntity(workspaceId: string, type: string, query: {
@@ -217,7 +212,7 @@ export abstract class PsqlEventDataStore<CustomError extends Error> implements d
       }
       this.maybeLogSqlResult(queryString, rows)
 
-      const count = parseInt(rows[0].count);
+      const count = rows.length === 0 ? 0: parseInt(rows[0].count);
       const entries = rows.map(this.entityMapper);
 
       return {
@@ -270,14 +265,14 @@ export abstract class PsqlEventDataStore<CustomError extends Error> implements d
 
       this.maybeLogSql(sql, params)
 
-      const res = task ? await task.none(sql, params) : await this.DB().none(sql, params);
+      const res = task ? await task.manyOrNone(sql, params) : await this.DB().manyOrNone(sql, params);
 
       this.maybeLogSqlResult(sql, res)
 
       const record = await this.getEntity(workspaceId, type, id);
 
       if (record !== null) {
-        return this.entityMapper(record);
+        return record;
       }
 
       return null;
@@ -343,8 +338,8 @@ export abstract class PsqlEventDataStore<CustomError extends Error> implements d
 
   async purge() {
     try {
+      logger.warn("Truncating the datastore")
       const res1 = await this.DB().any(`truncate datastore`);
-      logger.warn("Truncating the datastore", res1)
       const res2 = await this.DB().any(`truncate backupdatastore`);
       logger.warn("Truncating the backupdatastore", res2)
     } catch (error) {
