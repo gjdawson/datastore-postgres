@@ -8,6 +8,7 @@ import {v4 as uuidv4} from 'uuid';
 import {ds, logger} from "@eventicle/eventicle-utilities";
 import {getFileNameAndLineNumber} from "@eventicle/eventicle-utilities/dist/logger-util";
 import {IDatabase, IMain, ITask} from "pg-promise";
+import {Query} from "@eventicle/eventicle-utilities/dist/datastore";
 
 export abstract class PsqlEventDataStore<CustomError extends Error> implements ds.DataStore {
 
@@ -158,9 +159,7 @@ export abstract class PsqlEventDataStore<CustomError extends Error> implements d
     return this.entityMapper(row);
   }
 
-  async findEntity(workspaceId: string, type: string, query: {
-    [key: string]: string | number | ds.DataQuery
-  }, sorting: ds.DataSorting = {}): Promise<ds.Record[]> {
+  async findEntity(workspaceId: string, type: string, query: Query, sorting: ds.DataSorting = {}): Promise<ds.Record[]> {
 
     try {
       const queryString =
@@ -339,6 +338,40 @@ export abstract class PsqlEventDataStore<CustomError extends Error> implements d
     } catch (error) {
       logger.error(JSON.stringify(error));
     }
+  }
+
+  async deleteMany(workspaceId: string, type: string, query: Query): Promise<void> {
+    try {
+      let queryString = `delete
+                         from ${this.tableName(type)}
+                         where type = $[xxx_type]
+                           ${buildWhere(query)}`
+
+      if (this.config.workspaces) {
+        queryString = `delete
+                       from ${this.tableName(type)}
+                       where type = $[xxx_type]
+                         and workspace_id = $[xxx_workspaceId] ${buildWhere(query)}`
+
+      }
+
+      const queryObject = buildQueryObject(query, workspaceId, type)
+      const task: ITask<any> = als.get("transaction");
+      let res:any;
+      this.maybeLogSql(queryString, queryObject)
+      if (task) {
+        res = await task.any(queryString, queryObject)
+      } else {
+        res = await this.DB().any(queryString, queryObject);
+      }
+
+      this.maybeLogSqlResult(queryString, res)
+
+    } catch (e) {
+      logger.error(JSON.stringify(e));
+    }
+
+    return void(0)
   }
 
   async purge() {
