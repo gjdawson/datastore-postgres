@@ -16,14 +16,16 @@ export class PSQLLockManager<E extends Error> implements LockManager {
   }
 
   async tryLock<T>(id: string, onLock: () => Promise<T>, teardown: () => void): Promise<T> {
-    return await this.internalLock(hashCode(id), onLock, teardown, 1);
+    return await this.internalLock(id, onLock, teardown, 1);
   }
 
   async withLock<T>(id: string, onLock: () => Promise<T>, teardown: () => void): Promise<T> {
-    return await this.internalLock(hashCode(id), onLock, teardown, 3);
+    return await this.internalLock(id, onLock, teardown, 3);
   }
 
-  private async internalLock<T>(id: number, onLock: () => Promise<T>, teardown: () => void, maxAttempts: number): Promise<T> {
+  private async internalLock<T>(origId: string, onLock: () => Promise<T>, teardown: () => void, maxAttempts: number): Promise<T> {
+
+    const id = hashCode(origId)
 
     let file = getFileNameAndLineNumber(3)
     let lockId = uuidv4()
@@ -41,7 +43,7 @@ export class PSQLLockManager<E extends Error> implements LockManager {
           let ret = await trx.any(`select pg_try_advisory_lock(${PG_ADVISE_MAGIC}, ${id});`)
           return ret[0].pg_try_advisory_lock
         } catch (e) {
-          logger.warn("Failed to get PG advisory lock " + id, e)
+          logger.debug("Failed to get PG advisory lock " + origId + " / " + id, e)
           return false
         }
       }
@@ -50,12 +52,12 @@ export class PSQLLockManager<E extends Error> implements LockManager {
       let retData
       try {
         for (let attempts = 0; attempts <= maxAttempts; attempts++) {
-          logger.verbose(`tryGetLock ${id} [${lockId}] in transaction ${als.get("transaction.id")}, attempt ${attempts}`)
+          logger.verbose(`tryGetLock ${origId}/ ${id}  [${lockId}] in transaction ${als.get("transaction.id")}, attempt ${attempts}`)
           if (await tryGetLock()) {
             if (PSQL_LOCK_DEBUG) {
               LOCAL_LOCK_DEBUG[id]=file
             }
-            logger.debug(`Acquired lock after cycles: ${lockId} ` + attempts, {id, attempts, time: Date.now() - then})
+            logger.debug(`Acquired lock after cycles: ${origId}/${lockId} ` + attempts, {origId, id, attempts, time: Date.now() - then})
             doUnlock = true
             retData = await onLock()
               .catch(reason => {
@@ -74,7 +76,7 @@ export class PSQLLockManager<E extends Error> implements LockManager {
           await pause(50)
         }
 
-        logger.warn(`Failed to get PG advisory lock within acquire timeout, highly contended resource? [${lockId}]` + id, {
+        logger.debug(`Failed to get PG advisory lock within acquire timeout, highly contended resource? [${origId} / ${lockId}]` + id, {
           id,
           attempts: maxAttempts,
           time: Date.now() - then

@@ -112,7 +112,7 @@ export function buildWhere(query: { [p: string]: string | number | DataQuery }) 
       dataQuery = query[value] as DataQuery
     }
 
-    if (dataQuery == null) {
+    if (!dataQuery) {
       dataQuery = {
         value: null,
         op: "EQ"

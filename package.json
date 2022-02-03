@@ -1,6 +1,6 @@
 {
   "name": "@eventicle/datastore-postgres",
-  "version": "0.0.15",
+  "version": "0.0.16",
   "description": "Datastore implemented using postgres",
   "repository": "git@github.com:eventicle/datastore-postgres.git",
   "author": "Eventicle Team",
@@ -15,7 +15,7 @@
     "lint": "eslint . --ext .ts --fix"
   },
   "peerDependencies": {
-    "@eventicle/eventicle-utilities": "^0.0.3"
+    "@eventicle/eventicle-utilities": "^0.0.6"
   },
   "dependencies": {
     "@types/serialize-error": "^4.0.1",
@@ -27,6 +27,8 @@
     "uuid": "^8.3.1"
   },
   "devDependencies": {
+    "@eventicle/eventicle-utilities": "^0.0.6",
+    "@types/bluebird": "^3.5.36",
     "@types/jest": "^26.0.14",
     "@types/lodash": "^4.14.172",
     "@types/loglevel": "^1.5.4",
