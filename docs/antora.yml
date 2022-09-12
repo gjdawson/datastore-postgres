@@ -1,0 +1,4 @@
+name: datastore-postgres
+title: Postgres Datastore
+nav:
+  - modules/api/nav.adoc
