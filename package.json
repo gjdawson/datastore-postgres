@@ -1,6 +1,6 @@
 {
   "name": "@eventicle/datastore-postgres",
-  "version": "0.0.17",
+  "version": "0.0.22",
   "description": "Datastore implemented using postgres",
   "repository": "git@github.com:eventicle/datastore-postgres.git",
   "author": "Eventicle Team",
@@ -16,29 +16,29 @@
     "api": "yarn tsc && api-extractor run;api-documenter yaml -i tmp/api -o tmp/api-yaml;api-documenter-yaml-to-antora-asciidoc asciidoc -i tmp/api-yaml"
   },
   "peerDependencies": {
-    "@eventicle/eventicle-utilities": "^0.0.6"
+    "@eventicle/eventicle-utilities": "^0.0.12"
   },
   "dependencies": {
     "@types/serialize-error": "^4.0.1",
     "asynchronous-local-storage": "^1.0.2",
     "bluebird": "^3.7.2",
     "lodash": "^4.17.21",
-    "pg-promise": "^10.11.0",
+    "pg-promise": "^10.15.4",
     "serialize-error": "^7.0.1",
     "uuid": "^8.3.1"
   },
   "devDependencies": {
-    "@eventicle/eventicle-utilities": "^0.0.6",
+    "@eventicle/eventicle-utilities": "^0.0.12",
     "@microsoft/api-documenter": "^7.19.10",
     "@microsoft/api-extractor": "^7.30.0",
     "@types/bluebird": "^3.5.36",
-    "@types/jest": "^26.0.14",
+    "@types/jest": "^29.1.1",
     "@types/lodash": "^4.14.172",
     "@types/loglevel": "^1.5.4",
     "@types/node": "^14.11.10",
     "@types/uuid": "^8.3.0",
     "api-documenter-yaml-to-antora-asciidoc": "^0.0.0-11",
-    "jest": "^26.5.3",
+    "jest": "^29.1.2",
     "ts-jest": "^26.4.1",
     "ts-node": "^9.0.0",
     "tslint": "^5.16.0",

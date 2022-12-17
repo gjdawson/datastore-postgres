@@ -2,11 +2,10 @@ import {EventEmitter} from "events";
 import {als} from "asynchronous-local-storage";
 import {baseQuery, buildQueryObject, buildWhere} from './sql-helper';
 
-const stackTrace = require('stack-trace');
-
+import * as stackTrace from "@eventicle/eventicle-utilities/dist/stack-trace"
 import {v4 as uuidv4} from 'uuid';
-import {ds, logger} from "@eventicle/eventicle-utilities";
-import {getFileNameAndLineNumber} from "@eventicle/eventicle-utilities/dist/logger-util";
+import {ds, logger, span} from "@eventicle/eventicle-utilities";
+import {getFileNameAndLineNumber, maybeRenderError} from "@eventicle/eventicle-utilities/dist/logger-util";
 import {IDatabase, IMain, ITask} from "pg-promise";
 import {Query} from "@eventicle/eventicle-utilities/dist/datastore";
 
@@ -157,19 +156,29 @@ export abstract class PsqlEventDataStore<CustomError extends Error> implements d
   async findEntity(workspaceId: string, type: string, query: Query, sorting: ds.DataSorting = {}): Promise<ds.Record[]> {
 
     try {
-      const queryString =
-        baseQuery(type, this.tableName(type), this.config.workspaces) + ' ' +
-        buildWhere(query) + ' ' +
-        this.getOrderByClause(sorting);
+      let task: ITask<any>
+      let rows
+      let queryObject
+      let queryString
+      await span("Pre Query Prep", {}, async () => {
+        queryString = await span("Generate Query", {}, async () =>
+          baseQuery(type, this.tableName(type), this.config.workspaces) + ' ' +
+          buildWhere(query) + ' ' +
+          this.getOrderByClause(sorting))
 
-      const task: ITask<any> = als.get("transaction");
-      let rows = [];
-      const queryObject = buildQueryObject(query, workspaceId, type)
-      this.maybeLogSql(queryString, queryObject)
+        task = await span("Get TX Context", {}, async () => als.get("transaction"))
+        rows = [];
+        queryObject = await span("Build Query Object", {}, async () => buildQueryObject(query, workspaceId, type))
+        this.maybeLogSql(queryString, queryObject)
+      })
       if (task) {
-        rows = await task.manyOrNone(queryString, queryObject)
+        await span("Task/ TX Based Query", {}, async () => {
+          rows = await task.manyOrNone(queryString, queryObject)
+        })
       } else {
-        rows = await this.DB().manyOrNone(queryString, queryObject);
+        await span("Raw/ NONTX Query", {}, async () => {
+          rows = await this.DB().manyOrNone(queryString, queryObject);
+        })
       }
       this.maybeLogSqlResult(queryString, rows)
       return rows.map(this.entityMapper);
@@ -224,7 +233,7 @@ export abstract class PsqlEventDataStore<CustomError extends Error> implements d
       }
 
     } catch (error) {
-      logger.error("Query Error?", error);
+      logger.error("Query Error?", maybeRenderError(error));
     }
   }
 
