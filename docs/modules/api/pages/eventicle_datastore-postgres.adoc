@@ -1,0 +1,15 @@
+= package @eventicle/datastore-postgres
+
+
+
+
+
+== Classes
+
+[%header,cols="1,2",caption=""]
+|===
+|Name |Summary
+
+s|xref:eventicle_datastore-postgres_PsqlEventDataStore_class.adoc[PsqlEventDataStore]
+|
+|===

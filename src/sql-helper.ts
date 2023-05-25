@@ -1,5 +1,6 @@
 import {DataQuery} from "@eventicle/eventicle-utilities/dist/datastore";
 import {isNumeric} from "tslint";
+import {logger} from "@eventicle/eventicle-utilities";
 
 export type whereQueryBuilder = (key: string, query: DataQuery) => string
 
@@ -18,6 +19,7 @@ function formatLeftQuery(key: string, query: DataQuery) {
 }
 
 export function jsonColumnQueryBuilder(key: string, query: DataQuery) {
+
   let queryString = ""
 
   switch (query.op) {
@@ -65,6 +67,11 @@ export function buildQueryObject(query: { [p: string]: string | number | DataQue
 
   let queryObject = { xxx_workspaceId: workspaceId, xxx_type: type } as any
   Object.keys(query).forEach((value) => {
+
+    if (!query[value]) {
+      logger.warn("Query contains undefined value", { query, keyname: value })
+      return
+    }
 
     let dataQuery: DataQuery = null
 

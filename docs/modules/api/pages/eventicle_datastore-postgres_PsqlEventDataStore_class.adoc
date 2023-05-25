@@ -1,0 +1,692 @@
+= class PsqlEventDataStore
+
+
+
+
+
+== Properties
+
+[id="eventicle_datastore-postgres_PsqlEventDataStore_config_member"]
+=== config
+
+========
+
+
+
+
+
+
+.Signature
+[source,typescript]
+----
+readonly config: {
+        workspaces: boolean;
+        logSql?: boolean;
+    };
+----
+
+========
+[id="eventicle_datastore-postgres_PsqlEventDataStore_DB_member"]
+=== DB
+
+========
+
+
+
+
+
+
+.Signature
+[source,typescript]
+----
+readonly DB: () => IDatabase<any>;
+----
+
+========
+[id="eventicle_datastore-postgres_PsqlEventDataStore_entityMapper_member"]
+=== entityMapper
+
+========
+
+
+
+
+
+
+.Signature
+[source,typescript]
+----
+entityMapper: (row: any) => ds.Record;
+----
+
+========
+[id="eventicle_datastore-postgres_PsqlEventDataStore_events_member"]
+=== events
+
+========
+
+
+
+
+
+
+.Signature
+[source,typescript]
+----
+events: EventEmitter;
+----
+
+========
+[id="eventicle_datastore-postgres_PsqlEventDataStore_PGP_member"]
+=== PGP
+
+========
+
+
+
+
+
+
+.Signature
+[source,typescript]
+----
+readonly PGP: () => IMain;
+----
+
+========
+
+== Constructors
+
+[id="eventicle_datastore-postgres_PsqlEventDataStore_constructor_1"]
+=== (constructor)(DB, PGP, config)
+
+========
+
+Constructs a new instance of the `PsqlEventDataStore` class
+
+
+
+.Parameters
+[%header,cols="2,3,4",caption=""]
+|===
+|Name |Type |Description
+
+m|DB
+m|() =&gt; pgPromise.IDatabase&lt;any&gt;
+|
+
+m|PGP
+m|() =&gt; pgPromise.IMain
+|
+
+m|config
+m|{
+        workspaces: boolean;
+        logSql?: boolean;
+    }
+|
+|===
+
+.Signature
+[source,typescript]
+----
+constructor(DB: () => IDatabase<any>, PGP: () => IMain, config: {
+        workspaces: boolean;
+        logSql?: boolean;
+    });
+----
+
+========
+
+== Methods
+
+[id="eventicle_datastore-postgres_PsqlEventDataStore_createEntity_member_1"]
+=== createEntity(workspaceId, type, content)
+
+========
+
+
+
+
+
+.Parameters
+[%header%footer,cols="2,3,4",caption=""]
+|===
+|Name |Type |Description
+
+m|workspaceId
+m|string
+|
+
+m|type
+m|string
+|
+
+m|content
+m|any
+|
+
+s|Returns
+m|Promise&lt;Record&gt;
+|
+|===
+
+.Signature
+[source,typescript]
+----
+createEntity(workspaceId: string, type: string, content: any): Promise<ds.Record>;
+----
+
+========
+[id="eventicle_datastore-postgres_PsqlEventDataStore_deleteEntity_member_1"]
+=== deleteEntity(workspaceId, type, id)
+
+========
+
+
+
+
+
+.Parameters
+[%header%footer,cols="2,3,4",caption=""]
+|===
+|Name |Type |Description
+
+m|workspaceId
+m|string
+|
+
+m|type
+m|string
+|
+
+m|id
+m|string
+|
+
+s|Returns
+m|Promise&lt;any&gt;
+|
+|===
+
+.Signature
+[source,typescript]
+----
+deleteEntity(workspaceId: string, type: string, id: string): Promise<any>;
+----
+
+========
+[id="eventicle_datastore-postgres_PsqlEventDataStore_deleteMany_member_1"]
+=== deleteMany(workspaceId, type, query)
+
+========
+
+
+
+
+
+.Parameters
+[%header%footer,cols="2,3,4",caption=""]
+|===
+|Name |Type |Description
+
+m|workspaceId
+m|string
+|
+
+m|type
+m|string
+|
+
+m|query
+m|Query
+|
+
+s|Returns
+m|Promise&lt;void&gt;
+|
+|===
+
+.Signature
+[source,typescript]
+----
+deleteMany(workspaceId: string, type: string, query: Query): Promise<void>;
+----
+
+========
+[id="eventicle_datastore-postgres_PsqlEventDataStore_findEntity_member_1"]
+=== findEntity(workspaceId, type, query, sorting)
+
+========
+
+
+
+
+
+.Parameters
+[%header%footer,cols="2,3,4",caption=""]
+|===
+|Name |Type |Description
+
+m|workspaceId
+m|string
+|
+
+m|type
+m|string
+|
+
+m|query
+m|Query
+|
+
+m|sorting
+m|DataSorting
+|
+
+s|Returns
+m|Promise&lt;Record[]&gt;
+|
+|===
+
+.Signature
+[source,typescript]
+----
+findEntity(workspaceId: string, type: string, query: Query, sorting?: ds.DataSorting): Promise<ds.Record[]>;
+----
+
+========
+[id="eventicle_datastore-postgres_PsqlEventDataStore_findEntityPaginated_member_1"]
+=== findEntityPaginated(workspaceId, type, query, sorting, page, pageSize)
+
+========
+
+
+
+
+
+.Parameters
+[%header%footer,cols="2,3,4",caption=""]
+|===
+|Name |Type |Description
+
+m|workspaceId
+m|string
+|
+
+m|type
+m|string
+|
+
+m|query
+m|{
+        [key: string]: string \| null | DataQuery;
+    }
+|
+
+m|sorting
+m|DataSorting
+|
+
+m|page
+m|number
+|
+
+m|pageSize
+m|number
+|
+
+s|Returns
+m|Promise&lt;PagedRecords&gt;
+|
+|===
+
+.Signature
+[source,typescript]
+----
+findEntityPaginated(workspaceId: string, type: string, query: {
+        [key: string]: string | null | ds.DataQuery;
+    }, sorting: ds.DataSorting, page: number, pageSize: number): Promise<ds.PagedRecords>;
+----
+
+========
+[id="eventicle_datastore-postgres_PsqlEventDataStore_getEntity_member_1"]
+=== getEntity(workspaceId, type, id)
+
+========
+
+
+
+
+
+.Parameters
+[%header%footer,cols="2,3,4",caption=""]
+|===
+|Name |Type |Description
+
+m|workspaceId
+m|string
+|
+
+m|type
+m|string
+|
+
+m|id
+m|any
+|
+
+s|Returns
+m|Promise&lt;Record&gt;
+|
+|===
+
+.Signature
+[source,typescript]
+----
+getEntity(workspaceId: string, type: string, id: any): Promise<ds.Record>;
+----
+
+========
+[id="eventicle_datastore-postgres_PsqlEventDataStore_getTransactionData_member_1"]
+=== getTransactionData()
+
+========
+
+
+
+
+
+
+.Signature
+[source,typescript]
+----
+getTransactionData(): ds.TransactionData;
+----
+
+========
+[id="eventicle_datastore-postgres_PsqlEventDataStore_hasTransactionData_member_1"]
+=== hasTransactionData()
+
+========
+
+
+
+
+
+
+.Signature
+[source,typescript]
+----
+hasTransactionData(): boolean;
+----
+
+========
+[id="eventicle_datastore-postgres_PsqlEventDataStore_isConnected_member_1"]
+=== isConnected()
+
+========
+
+
+
+
+
+
+.Signature
+[source,typescript]
+----
+isConnected(): Promise<boolean>;
+----
+
+========
+[id="eventicle_datastore-postgres_PsqlEventDataStore_isCustomError_member_1"]
+=== isCustomError(error)
+
+========
+
+
+
+
+
+.Parameters
+[%header%footer,cols="2,3,4",caption=""]
+|===
+|Name |Type |Description
+
+m|error
+m|Error
+|
+
+s|Returns
+m|@eventicle/datastore-postgres!\~error is CustomError
+|
+|===
+
+.Signature
+[source,typescript]
+----
+abstract isCustomError(error: Error): error is CustomError;
+----
+
+========
+[id="eventicle_datastore-postgres_PsqlEventDataStore_maybeLogSql_member_1"]
+=== maybeLogSql(query, params)
+
+========
+
+
+
+
+
+.Parameters
+[%header%footer,cols="2,3,4",caption=""]
+|===
+|Name |Type |Description
+
+m|query
+m|string
+|
+
+m|params
+m|any
+|
+
+s|Returns
+m|void
+|
+|===
+
+.Signature
+[source,typescript]
+----
+maybeLogSql(query: string, params: any): void;
+----
+
+========
+[id="eventicle_datastore-postgres_PsqlEventDataStore_maybeLogSqlResult_member_1"]
+=== maybeLogSqlResult(query, vals)
+
+========
+
+
+
+
+
+.Parameters
+[%header%footer,cols="2,3,4",caption=""]
+|===
+|Name |Type |Description
+
+m|query
+m|string
+|
+
+m|vals
+m|any[]
+|
+
+s|Returns
+m|void
+|
+|===
+
+.Signature
+[source,typescript]
+----
+maybeLogSqlResult(query: string, vals: any[]): void;
+----
+
+========
+[id="eventicle_datastore-postgres_PsqlEventDataStore_on_member_1"]
+=== on(event, listener)
+
+========
+
+
+
+
+
+.Parameters
+[%header%footer,cols="2,3,4",caption=""]
+|===
+|Name |Type |Description
+
+m|event
+m|"transaction.start" \| "transaction.commit"
+|
+
+m|listener
+m|(name: string, data: TransactionData) =&gt; void
+|
+
+s|Returns
+m|this
+|
+|===
+
+.Signature
+[source,typescript]
+----
+on(event: "transaction.start" | "transaction.commit", listener: (name: string, data: ds.TransactionData) => void): this;
+----
+
+========
+[id="eventicle_datastore-postgres_PsqlEventDataStore_purge_member_1"]
+=== purge()
+
+========
+
+
+
+
+
+
+.Signature
+[source,typescript]
+----
+purge(): Promise<void>;
+----
+
+========
+[id="eventicle_datastore-postgres_PsqlEventDataStore_saveEntity_member_1"]
+=== saveEntity(workspaceId, type, item)
+
+========
+
+
+
+
+
+.Parameters
+[%header%footer,cols="2,3,4",caption=""]
+|===
+|Name |Type |Description
+
+m|workspaceId
+m|string
+|
+
+m|type
+m|string
+|
+
+m|item
+m|Record
+|
+
+s|Returns
+m|Promise&lt;Record&gt;
+|
+|===
+
+.Signature
+[source,typescript]
+----
+saveEntity(workspaceId: string, type: string, item: ds.Record): Promise<ds.Record>;
+----
+
+========
+[id="eventicle_datastore-postgres_PsqlEventDataStore_tableName_member_1"]
+=== tableName(type)
+
+========
+
+
+
+
+
+.Parameters
+[%header%footer,cols="2,3,4",caption=""]
+|===
+|Name |Type |Description
+
+m|type
+m|any
+|
+
+s|Returns
+m|string
+|
+|===
+
+.Signature
+[source,typescript]
+----
+tableName(type: any): string;
+----
+
+========
+[id="eventicle_datastore-postgres_PsqlEventDataStore_transaction_member_1"]
+=== transaction(exec, options)
+
+========
+
+
+
+
+
+.Parameters
+[%header%footer,cols="2,3,4",caption=""]
+|===
+|Name |Type |Description
+
+m|exec
+m|() =&gt; Promise&lt;T&gt;
+|
+
+m|options
+m|TransactionOptions
+|
+
+s|Returns
+m|Promise&lt;T&gt;
+|
+|===
+
+.Signature
+[source,typescript]
+----
+transaction<T>(exec: () => Promise<T>, options?: ds.TransactionOptions): Promise<T>;
+----
+
+========
