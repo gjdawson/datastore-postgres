@@ -1,6 +1,6 @@
 {
   "name": "@eventicle/datastore-postgres",
-  "version": "0.0.22",
+  "version": "0.0.23",
   "description": "Datastore implemented using postgres",
   "repository": "git@github.com:eventicle/datastore-postgres.git",
   "author": "Eventicle Team",
@@ -16,7 +16,7 @@
     "api": "yarn tsc && api-extractor run;api-documenter yaml -i tmp/api -o tmp/api-yaml;api-documenter-yaml-to-antora-asciidoc asciidoc -i tmp/api-yaml"
   },
   "peerDependencies": {
-    "@eventicle/eventicle-utilities": "^0.0.12"
+    "@eventicle/eventicle-utilities": "^0.0.13"
   },
   "dependencies": {
     "@types/serialize-error": "^4.0.1",
@@ -28,7 +28,7 @@
     "uuid": "^8.3.1"
   },
   "devDependencies": {
-    "@eventicle/eventicle-utilities": "^0.0.12",
+    "@eventicle/eventicle-utilities": "^0.0.13",
     "@microsoft/api-documenter": "^7.19.10",
     "@microsoft/api-extractor": "^7.30.0",
     "@types/bluebird": "^3.5.36",

@@ -59,6 +59,18 @@ export function jsonColumnQueryBuilder(key: string, query: DataQuery) {
         queryString = `${queryString} AND ${k} ilike $[${key}]`
       }
       break;
+    case "ARRAY_CONTAINS":
+      const formatValue = (key, propName, value) => {
+        const keyName = `${key}_${propName}`
+        let formattedKey = ` "$[${keyName}:value]" `
+        if (Number.isFinite(value)) {
+          formattedKey = ` $[${keyName}:value] `;
+        }
+        return formattedKey
+      }
+
+      queryString = `${queryString} AND content @? '$.${key}[*] ? (${Object.keys(query.value).map(propName => `@.${propName} == ${formatValue(key, propName, query.value[propName])}`).join(" && ")})'`
+      break;
   }
   return queryString;
 }
@@ -75,7 +87,7 @@ export function buildQueryObject(query: { [p: string]: string | number | DataQue
 
     let dataQuery: DataQuery = null
 
-    if(["string", "number"].includes(typeof query[value])) {
+    if(["string", "number", "boolean"].includes(typeof query[value])) {
       dataQuery = {
         value: query[value] as string,
         op: "EQ"
@@ -87,6 +99,16 @@ export function buildQueryObject(query: { [p: string]: string | number | DataQue
         value: `%${query[value].value.like}%` || "",
         op: "LIKE"
       }
+      // @ts-ignore
+    } else if(query[value].op == "ARRAY_CONTAINS") {
+      const dataQuery = query[value] as DataQuery
+
+      // generate synthetic values for each sub property.
+      Object.keys(dataQuery.value).forEach(propName => {
+        queryObject[`${value}_${propName}`] = dataQuery.value[propName]
+      })
+      // skip any other logic for this op type
+      return;
     } else {
       dataQuery = query[value] as DataQuery
     }
