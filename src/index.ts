@@ -192,16 +192,27 @@ export abstract class PsqlEventDataStore<CustomError extends Error> implements d
   }, sorting: ds.DataSorting, page: number, pageSize: number): Promise<ds.PagedRecords> {
 
     try {
+      // We don't want to try and sort and limit unless we actually have numbers to work with.
 
-      let offset = (page * pageSize) - pageSize
-      if(offset < 0) {
-        offset = 0;
+      let sortlimit: string = "";
+      let offset: number = 0;
+
+      if(pageSize && pageSize > 0) {
+        sortlimit = `LIMIT ${pageSize}`
+      }
+
+      if(page) {
+        offset = (page * pageSize) - pageSize
+        if( offset < 0) {
+          offset = 0
+        }
+        sortlimit = `${sortlimit} OFFSET ${offset}`
       }
 
       const queryString =
         `${baseQuery(type, this.tableName(type), this.config.workspaces) + ' ' +
         buildWhere(query) + ' ' +
-        this.getOrderByClause(sorting)} LIMIT ${pageSize} OFFSET ${offset}`.replace('select *', 'select *, count(*) over() as count');
+        this.getOrderByClause(sorting)} ${sortlimit}`.replace('select *', 'select *, count(*) over() as count');
 
       const task: ITask<any> = als.get("transaction");
       let rows = [];
