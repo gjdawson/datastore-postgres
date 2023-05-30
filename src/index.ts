@@ -156,21 +156,15 @@ export abstract class PsqlEventDataStore<CustomError extends Error> implements d
   async findEntity(workspaceId: string, type: string, query: Query, sorting: ds.DataSorting = {}): Promise<ds.Record[]> {
 
     try {
-      let task: ITask<any>
-      let rows
-      let queryObject
-      let queryString
-      await span("Pre Query Prep", {}, async () => {
-        queryString = await span("Generate Query", {}, async () =>
-          baseQuery(type, this.tableName(type), this.config.workspaces) + ' ' +
-          buildWhere(query) + ' ' +
-          this.getOrderByClause(sorting))
+      const queryString =
+        baseQuery(type, this.tableName(type), this.config.workspaces) + ' ' +
+        buildWhere(query) + ' ' +
+        this.getOrderByClause(sorting);
 
-        task = await span("Get TX Context", {}, async () => als.get("transaction"))
-        rows = [];
-        queryObject = await span("Build Query Object", {}, async () => buildQueryObject(query, workspaceId, type))
-        this.maybeLogSql(queryString, queryObject)
-      })
+      const task: ITask<any> = als.get("transaction");
+      let rows = [];
+      const queryObject = buildQueryObject(query, workspaceId, type)
+      this.maybeLogSql(queryString, queryObject)
       if (task) {
         await span("Task/ TX Based Query", {}, async () => {
           rows = await task.manyOrNone(queryString, queryObject)
