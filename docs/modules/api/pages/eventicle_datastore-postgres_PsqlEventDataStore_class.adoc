@@ -292,7 +292,7 @@ m|Promise&lt;Record[]&gt;
 .Signature
 [source,typescript]
 ----
-findEntity(workspaceId: string, type: string, query: Query, sorting?: ds.DataSorting): Promise<ds.Record[]>;
+findEntity(workspaceId: string, type: string, query: ds.Query, sorting?: ds.DataSorting): Promise<ds.Record[]>;
 ----
 
 ========
@@ -319,9 +319,7 @@ m|string
 |
 
 m|query
-m|{
-        [key: string]: string \| null | DataQuery;
-    }
+m|Query
 |
 
 m|sorting
@@ -344,9 +342,7 @@ m|Promise&lt;PagedRecords&gt;
 .Signature
 [source,typescript]
 ----
-findEntityPaginated(workspaceId: string, type: string, query: {
-        [key: string]: string | null | ds.DataQuery;
-    }, sorting: ds.DataSorting, page: number, pageSize: number): Promise<ds.PagedRecords>;
+findEntityPaginated(workspaceId: string, type: string, query: Query, sorting: ds.DataSorting, page: number, pageSize: number): Promise<ds.PagedRecords>;
 ----
 
 ========
