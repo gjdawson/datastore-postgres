@@ -342,7 +342,7 @@ m|Promise&lt;PagedRecords&gt;
 .Signature
 [source,typescript]
 ----
-findEntityPaginated(workspaceId: string, type: string, query: Query, sorting: ds.DataSorting, page: number, pageSize: number): Promise<ds.PagedRecords>;
+findEntityPaginated(workspaceId: string, type: string, query: ds.Query, sorting: ds.DataSorting, page: number, pageSize: number): Promise<ds.PagedRecords>;
 ----
 
 ========
