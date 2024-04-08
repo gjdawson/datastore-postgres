@@ -186,7 +186,7 @@ export abstract class PsqlEventDataStore<CustomError extends Error> implements d
     return [];
   }
 
-  async findEntityPaginated(workspaceId: string, type: string, query: Query, sorting: ds.DataSorting, page: number, pageSize: number): Promise<ds.PagedRecords> {
+  async findEntityPaginated(workspaceId: string, type: string, query: ds.Query, sorting: ds.DataSorting, page: number, pageSize: number): Promise<ds.PagedRecords> {
 
     try {
       // We don't want to try and sort and limit unless we actually have numbers to work with.
