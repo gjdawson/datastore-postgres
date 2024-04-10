@@ -27,10 +27,8 @@ export declare abstract class PsqlEventDataStore<CustomError extends Error> impl
     maybeLogSql(query: string, params: any): void;
     maybeLogSqlResult(query: string, vals: any[]): void;
     getEntity(workspaceId: string, type: string, id: any): Promise<ds.Record>;
-    findEntity(workspaceId: string, type: string, query: Query, sorting?: ds.DataSorting): Promise<ds.Record[]>;
-    findEntityPaginated(workspaceId: string, type: string, query: {
-        [key: string]: string | null | ds.DataQuery;
-    }, sorting: ds.DataSorting, page: number, pageSize: number): Promise<ds.PagedRecords>;
+    findEntity(workspaceId: string, type: string, query: ds.Query, sorting?: ds.DataSorting): Promise<ds.Record[]>;
+    findEntityPaginated(workspaceId: string, type: string, query: ds.Query, sorting: ds.DataSorting, page: number, pageSize: number): Promise<ds.PagedRecords>;
     createEntity(workspaceId: string, type: string, content: any): Promise<ds.Record>;
     saveEntity(workspaceId: string, type: string, item: ds.Record): Promise<ds.Record>;
     deleteEntity(workspaceId: string, type: string, id: string): Promise<any>;

@@ -1,7 +1,6 @@
 import {EventEmitter} from "events";
 import {als} from "asynchronous-local-storage";
 import {baseQuery, buildQueryObject, buildWhere} from './sql-helper';
-
 import * as stackTrace from "@eventicle/eventicle-utilities/dist/stack-trace"
 import {v4 as uuidv4} from 'uuid';
 import {ds, logger, span} from "@eventicle/eventicle-utilities";
@@ -153,7 +152,7 @@ export abstract class PsqlEventDataStore<CustomError extends Error> implements d
     return this.entityMapper(rows);
   }
 
-  async findEntity(workspaceId: string, type: string, query: Query, sorting: ds.DataSorting = {}): Promise<ds.Record[]> {
+  async findEntity(workspaceId: string, type: string, query: ds.Query, sorting: ds.DataSorting = {}): Promise<ds.Record[]> {
 
     try {
       const queryString =
@@ -187,9 +186,7 @@ export abstract class PsqlEventDataStore<CustomError extends Error> implements d
     return [];
   }
 
-  async findEntityPaginated(workspaceId: string, type: string, query: {
-    [key: string]: string | null | ds.DataQuery
-  }, sorting: ds.DataSorting, page: number, pageSize: number): Promise<ds.PagedRecords> {
+  async findEntityPaginated(workspaceId: string, type: string, query: ds.Query, sorting: ds.DataSorting, page: number, pageSize: number): Promise<ds.PagedRecords> {
 
     try {
       // We don't want to try and sort and limit unless we actually have numbers to work with.
@@ -397,21 +394,23 @@ export abstract class PsqlEventDataStore<CustomError extends Error> implements d
   private getOrderByClause(sorting: ds.DataSorting) {
     let orderBy = 'ORDER BY ';
 
+    const orders = []
+
     if (sorting && Object.keys(sorting).length > 0) {
       Object.keys(sorting).forEach((value) => {
         if (value == "createdAt") {
-          orderBy += `createdat ${sorting[value]},`;
+          orders.push(`createdat ${sorting[value]}`);
         } else {
-          orderBy += `content->>'${value}' ${sorting[value]},`;
+          orders.push(`content->>'${value}' ${sorting[value]}`);
         }
       });
-
-      orderBy = orderBy.substring(0, orderBy.length - 1);
     } else {
-      orderBy = orderBy + ' id';
+      orders.push("id")
     }
 
-    return orderBy;
+    return `ORDER BY ${orders.join(", ")}`;
+
+    // return orderBy;
   }
 
   abstract isCustomError(error: Error): error is CustomError
